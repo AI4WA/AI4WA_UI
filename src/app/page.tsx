@@ -1,6 +1,7 @@
 'use client';
 
 import {gql, useSubscription, useMutation} from '@apollo/client';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import {
     Paper,
     Table,
@@ -110,7 +111,7 @@ export default function ExamplePage() {
     }
 
     return (
-        <>
+        <ProtectedRoute>
             <Card sx={{margin: '2rem'}}>
                 <CardContent>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -211,6 +212,6 @@ export default function ExamplePage() {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </>
+        </ProtectedRoute>
     );
 }
