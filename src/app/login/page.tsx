@@ -38,7 +38,9 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8000/api/token/', {
+            // Call the login API from the environment variable
+            const loginUrl = process.env.NEXT_PUBLIC_API_URL + '/api/token/';
+            const response = await fetch(loginUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
