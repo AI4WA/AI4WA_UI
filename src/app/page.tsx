@@ -1,6 +1,6 @@
 'use client';
 
-import {gql, useSubscription, useMutation} from '@apollo/client';
+import { gql, useSubscription, useMutation } from '@apollo/client';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import {
     Paper,
@@ -25,63 +25,104 @@ import {
     Box
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import {useState} from 'react';
+import { useState } from 'react';
+
+// GraphQL Types
+interface ImageData {
+    id: string | number;
+    image: string;
+    updated_at: string;
+    created_at: string;
+}
+
+interface PatientTrackingItem {
+    id: string | number;
+    description: string;
+    count: number;
+    created_at: string;
+    updated_at: string;
+    dashboard_imagedata?: ImageData[];
+}
+
+interface SubscriptionData {
+    dashboard_patienttracking: PatientTrackingItem[];
+}
+
+interface MutationResponse {
+    insert_dashboard_patienttracking: {
+        returning: Array<{ id: string | number }>;
+        affected_rows: number;
+    };
+}
+
+interface FormData {
+    description: string;
+    count: string;
+}
+
+interface MutationVariables {
+    description: string;
+    count: number;
+}
 
 const SUB_DASHBOARD_PATIENTTRACKING = gql`
-  subscription GET_DASHBOARD_PATIENTTRACKING {
-    dashboard_patienttracking {
-      id
-      updated_at
-      description
-      count
-      created_at
-      dashboard_imagedata {
-        id
-        image
-        updated_at
-        created_at
-      }
+    subscription GET_DASHBOARD_PATIENTTRACKING {
+        dashboard_patienttracking {
+            id
+            updated_at
+            description
+            count
+            created_at
+            dashboard_imagedata {
+                id
+                image
+                updated_at
+                created_at
+            }
+        }
     }
-  }
 `;
 
 const ADD_PATIENT_TRACKING = gql`
-mutation ADD_PATIENT_TRACKING($description: String!, $count: Int!) {
-  insert_dashboard_patienttracking(objects: {description: $description, count: $count, created_at: "now()", updated_at: "now()"}) {
-    returning {
-      id
+    mutation ADD_PATIENT_TRACKING($description: String!, $count: Int!) {
+        insert_dashboard_patienttracking(
+            objects: { description: $description, count: $count, created_at: "now()", updated_at: "now()" }
+        ) {
+            returning {
+                id
+            }
+            affected_rows
+        }
     }
-    affected_rows
-  }
-}
-
 `;
 
-export default function ExamplePage() {
-    const [open, setOpen] = useState(false);
-    const [formData, setFormData] = useState({
+export default function ExamplePage(): JSX.Element {
+    const [open, setOpen] = useState<boolean>(false);
+    const [formData, setFormData] = useState<FormData>({
         description: '',
         count: ''
     });
 
-    const {loading, error, data} = useSubscription(SUB_DASHBOARD_PATIENTTRACKING);
-    const [addPatientTracking, {loading: addLoading}] = useMutation(ADD_PATIENT_TRACKING);
+    const { loading, error, data } = useSubscription<SubscriptionData>(SUB_DASHBOARD_PATIENTTRACKING);
+    const [addPatientTracking, { loading: addLoading }] = useMutation<MutationResponse, MutationVariables>(
+        ADD_PATIENT_TRACKING
+    );
 
-    const handleClickOpen = () => {
+    const handleClickOpen = (): void => {
         setOpen(true);
     };
 
-    const handleClose = () => {
+    const handleClose = (): void => {
         setOpen(false);
-        setFormData({description: '', count: ''});
+        setFormData({ description: '', count: '' });
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (): Promise<void> => {
         try {
             await addPatientTracking({
                 variables: {
                     description: formData.description,
-                    count: parseInt(formData.count)
+                    count: parseInt(formData.count, 10)
                 }
             });
             handleClose();
@@ -90,21 +131,22 @@ export default function ExamplePage() {
         }
     };
 
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleString();
+    const formatDate = (dateString: string | Date): string => {
+        const date = dateString instanceof Date ? dateString : new Date(dateString);
+        return date.toLocaleString();
     };
 
     if (loading) {
         return (
-            <div style={{display: 'flex', justifyContent: 'center', padding: '2rem'}}>
-                <CircularProgress/>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+                <CircularProgress />
             </div>
         );
     }
 
     if (error) {
         return (
-            <Alert severity="error" sx={{margin: '2rem'}}>
+            <Alert severity="error" sx={{ margin: '2rem' }}>
                 Error: {error.message}
             </Alert>
         );
@@ -112,7 +154,7 @@ export default function ExamplePage() {
 
     return (
         <ProtectedRoute>
-            <Card sx={{margin: '2rem'}}>
+            <Card sx={{ margin: '2rem' }}>
                 <CardContent>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                         <Typography variant="h5" component="h1">
@@ -124,11 +166,11 @@ export default function ExamplePage() {
                             onClick={handleClickOpen}
                             size="medium"
                         >
-                            <AddIcon/>
+                            <AddIcon />
                         </Fab>
                     </Box>
 
-                    <TableContainer component={Paper} sx={{maxHeight: 440}}>
+                    <TableContainer component={Paper} sx={{ maxHeight: 440 }}>
                         <Table stickyHeader aria-label="patient tracking table">
                             <TableHead>
                                 <TableRow>
@@ -141,10 +183,10 @@ export default function ExamplePage() {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {data?.dashboard_patienttracking.map((item) => (
+                                {data?.dashboard_patienttracking.map((item: PatientTrackingItem) => (
                                     <TableRow
                                         key={item.id}
-                                        sx={{'&:last-child td, &:last-child th': {border: 0}}}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                         hover
                                     >
                                         <TableCell>{item.id}</TableCell>
@@ -154,8 +196,8 @@ export default function ExamplePage() {
                                         <TableCell>{formatDate(item.updated_at)}</TableCell>
                                         <TableCell>
                                             {item.dashboard_imagedata && (
-                                                <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                                                    {item.dashboard_imagedata.map((imgData) => (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                    {item.dashboard_imagedata.map((imgData: ImageData) => (
                                                         <div
                                                             key={imgData.id}
                                                             style={{
@@ -180,7 +222,6 @@ export default function ExamplePage() {
                 </CardContent>
             </Card>
 
-            {/* Add Record Dialog */}
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Add New Patient Tracking Record</DialogTitle>
                 <DialogContent>
@@ -191,7 +232,7 @@ export default function ExamplePage() {
                         type="text"
                         fullWidth
                         value={formData.description}
-                        onChange={(e) => setFormData({...formData, description: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     />
                     <TextField
                         margin="dense"
@@ -199,7 +240,7 @@ export default function ExamplePage() {
                         type="number"
                         fullWidth
                         value={formData.count}
-                        onChange={(e) => setFormData({...formData, count: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, count: e.target.value })}
                     />
                 </DialogContent>
                 <DialogActions>

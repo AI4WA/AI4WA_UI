@@ -1,5 +1,6 @@
 'use client';
 
+import { ReactNode } from 'react';
 import { ApolloProvider } from '@apollo/client';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -8,7 +9,11 @@ import theme from './theme';
 
 const client = createApolloClient();
 
-export function Providers({ children }) {
+interface ProvidersProps {
+    children: ReactNode;
+}
+
+export function Providers({ children }: ProvidersProps): JSX.Element {
     return (
         <ApolloProvider client={client}>
             <ThemeProvider theme={theme}>

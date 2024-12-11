@@ -21,7 +21,6 @@ import {
     LockOutlined as LockOutlinedIcon,
     Visibility,
     VisibilityOff,
-    Email as EmailIcon,
     Person as PersonIcon
 } from '@mui/icons-material';
 
@@ -166,7 +165,7 @@ export default function LoginPage() {
                                 Forgot password?
                             </Link>
                             <Link href="/register" variant="body2">
-                                Don't have an account? Sign Up
+                                Do not have an account? Sign Up
                             </Link>
                         </Box>
                     </Box>
