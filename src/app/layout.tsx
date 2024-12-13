@@ -1,4 +1,5 @@
 import {Providers} from './provider';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 export default function RootLayout({
                                        children,
